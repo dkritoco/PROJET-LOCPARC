@@ -1,0 +1,207 @@
+Bases de datos consultas LOCPARC MODELADO UML
+
+CREACION DE LA BASE DE DATOS
+
+CREATE DATABASE mns_projet_locparc;
+
+USE mns_projet_locparc;
+
+CREATE TABLE Country(
+   Id_country INT,
+   country VARCHAR(50),
+   PRIMARY KEY(Id_country),
+   UNIQUE(country)
+);
+
+CREATE TABLE Area_code(
+   Id_area_code INT,
+   area_code INT NOT NULL,
+   Id_country INT NOT NULL,
+   PRIMARY KEY(Id_area_code),
+   FOREIGN KEY(Id_country) REFERENCES Country(Id_country)
+);
+
+CREATE TABLE Licence(
+   Id_licence INT,
+   type VARCHAR(50),
+   description VARCHAR(300),
+   max_number INT,
+   PRIMARY KEY(Id_licence)
+);
+
+CREATE TABLE Category(
+   Id_category INT,
+   name VARCHAR(50) NOT NULL,
+   PRIMARY KEY(Id_category),
+   UNIQUE(name)
+);
+
+CREATE TABLE Authorizations(
+   Id_Authorizations INT,
+   name VARCHAR(50),
+   PRIMARY KEY(Id_Authorizations)
+);
+
+CREATE TABLE Manufacturers(
+   manufacture_id INT,
+   name VARCHAR(50),
+   PRIMARY KEY(manufacture_id)
+);
+
+CREATE TABLE Payment_type(
+   Id_payment_type INT,
+   name VARCHAR(50),
+   PRIMARY KEY(Id_payment_type)
+);
+
+CREATE TABLE Notifications(
+   id_notification INT,
+   date_notification DATE,
+   already_sent LOGICAL,
+   orders INT,
+   content VARCHAR(50),
+   PRIMARY KEY(id_notification)
+);
+
+CREATE TABLE Sub_category(
+   Id_sub_category INT,
+   name VARCHAR(50) NOT NULL,
+   Id_category INT NOT NULL,
+   PRIMARY KEY(Id_sub_category),
+   UNIQUE(name),
+   FOREIGN KEY(Id_category) REFERENCES Category(Id_category)
+);
+
+CREATE TABLE City(
+   Id_city INT,
+   city VARCHAR(50) NOT NULL,
+   Id_area_code INT NOT NULL,
+   PRIMARY KEY(Id_city),
+   UNIQUE(city),
+   FOREIGN KEY(Id_area_code) REFERENCES Area_code(Id_area_code)
+);
+
+CREATE TABLE Payment(
+   Id_payment INT,
+   amount DECIMAL(15,2) NOT NULL,
+   details VARCHAR(100),
+   Id_payment_type INT,
+   PRIMARY KEY(Id_payment),
+   FOREIGN KEY(Id_payment_type) REFERENCES Payment_type(Id_payment_type)
+);
+
+CREATE TABLE Address(
+   Id_Address INT,
+   street_address VARCHAR(50) NOT NULL,
+   address_specifications VARCHAR(100),
+   Id_city INT NOT NULL,
+   PRIMARY KEY(Id_Address),
+   FOREIGN KEY(Id_city) REFERENCES City(Id_city)
+);
+
+CREATE TABLE Models(
+   id_model INT,
+   reference VARCHAR(50),
+   manufacture_id INT,
+   PRIMARY KEY(id_model),
+   FOREIGN KEY(manufacture_id) REFERENCES Manufacturers(manufacture_id)
+);
+
+CREATE TABLE Users(
+   Id_user INT,
+   first_name VARCHAR(50) NOT NULL,
+   last_name VARCHAR(50) NOT NULL,
+   email VARCHAR(80) NOT NULL,
+   password VARCHAR(257) NOT NULL,
+   phone VARCHAR(13) NOT NULL,
+   active LOGICAL NOT NULL,
+   Id_Authorizations INT NOT NULL,
+   Id_Address INT NOT NULL,
+   PRIMARY KEY(Id_user),
+   UNIQUE(email),
+   FOREIGN KEY(Id_Authorizations) REFERENCES Authorizations(Id_Authorizations),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address)
+);
+
+CREATE TABLE Items(
+   Id_item INT,
+   serial_number VARCHAR(250),
+   arrival_date DATE,
+   name VARCHAR(50) NOT NULL,
+   description TEXT NOT NULL,
+   active LOGICAL,
+   price_per_day CURRENCY,
+   on_mantenance LOGICAL,
+   id_model INT NOT NULL,
+   Id_sub_category INT NOT NULL,
+   PRIMARY KEY(Id_item),
+   FOREIGN KEY(id_model) REFERENCES Models(id_model),
+   FOREIGN KEY(Id_sub_category) REFERENCES Sub_category(Id_sub_category)
+);
+
+CREATE TABLE Repairman(
+   Id_repairman INT,
+   name VARCHAR(50) NOT NULL,
+   phone VARCHAR(15),
+   email VARCHAR(100),
+   Id_Address INT NOT NULL,
+   PRIMARY KEY(Id_repairman),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address)
+);
+
+CREATE TABLE Status(
+   Id_status INT,
+   status_solicitud LOGICAL NOT NULL,
+   response_date DATE,
+   motive VARCHAR(250),
+   Id_user INT NOT NULL,
+   PRIMARY KEY(Id_status),
+   FOREIGN KEY(Id_user) REFERENCES Users(Id_user)
+);
+
+CREATE TABLE Maintenance(
+   Id_maintenance INT,
+   date_sent DATETIME,
+   date_received DATETIME,
+   incident VARCHAR(300),
+   repair_cost DECIMAL(15,2),
+   Id_repairman INT NOT NULL,
+   Id_item INT NOT NULL,
+   PRIMARY KEY(Id_maintenance),
+   FOREIGN KEY(Id_repairman) REFERENCES Repairman(Id_repairman),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item)
+);
+
+CREATE TABLE Orders(
+   Id_order INT,
+   start_date DATETIME NOT NULL,
+   end_date DATETIME,
+   event VARCHAR(100),
+   Id_payment INT NOT NULL,
+   Id_user INT,
+   Id_Address INT NOT NULL,
+   Id_status INT,
+   PRIMARY KEY(Id_order),
+   FOREIGN KEY(Id_payment) REFERENCES Payment(Id_payment),
+   FOREIGN KEY(Id_user) REFERENCES Users(Id_user),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address),
+   FOREIGN KEY(Id_status) REFERENCES Status(Id_status)
+);
+
+CREATE TABLE item_licence(
+   Id_item INT,
+   Id_licence INT,
+   PRIMARY KEY(Id_item, Id_licence),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item),
+   FOREIGN KEY(Id_licence) REFERENCES Licence(Id_licence)
+);
+
+CREATE TABLE Orders_items(
+   Id_item INT,
+   Id_order INT,
+   date_de_retour_reele VARCHAR(50),
+   PRIMARY KEY(Id_item, Id_order),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item),
+   FOREIGN KEY(Id_order) REFERENCES Orders(Id_order)
+);
+

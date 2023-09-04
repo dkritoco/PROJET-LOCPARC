@@ -1,0 +1,211 @@
+consultas SQL
+
+CREATE DATABASE `locparc` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+USE locparc;
+
+CREATE TABLE Permissions(
+   Id_permission INT,
+   title VARCHAR(50) NOT NULL,
+   description VARCHAR(50) NOT NULL,
+   PRIMARY KEY(Id_permission)
+);
+
+CREATE TABLE Country(
+   Id_country INT,
+   country VARCHAR(50),
+   PRIMARY KEY(Id_country),
+   UNIQUE(country)
+);
+
+CREATE TABLE Area_code(
+   Id_area_code INT,
+   area_code INT NOT NULL,
+   Id_country INT NOT NULL,
+   PRIMARY KEY(Id_area_code),
+   FOREIGN KEY(Id_country) REFERENCES Country(Id_country)
+);
+
+CREATE TABLE Licence(
+   Id_licence INT,
+   type VARCHAR(50),
+   description VARCHAR(300),
+   details VARCHAR(1000),
+   max_number INT,
+   PRIMARY KEY(Id_licence)
+);
+
+CREATE TABLE Deposit_type(
+   Id_deposit_type INT,
+   deposit_type VARCHAR(20) NOT NULL,
+   PRIMARY KEY(Id_deposit_type)
+);
+
+CREATE TABLE Category(
+   Id_category INT,
+   name VARCHAR(50) NOT NULL,
+   PRIMARY KEY(Id_category),
+   UNIQUE(name)
+);
+
+CREATE TABLE Authorizations(
+   Id_Authorizations INT,
+   name VARCHAR(50),
+   PRIMARY KEY(Id_Authorizations)
+);
+
+CREATE TABLE Sub_category(
+   Id_sub_category INT,
+   name VARCHAR(50) NOT NULL,
+   Id_category INT NOT NULL,
+   PRIMARY KEY(Id_sub_category),
+   UNIQUE(name),
+   FOREIGN KEY(Id_category) REFERENCES Category(Id_category)
+);
+
+CREATE TABLE City(
+   Id_city INT,
+   city VARCHAR(50) NOT NULL,
+   Id_area_code INT NOT NULL,
+   PRIMARY KEY(Id_city),
+   UNIQUE(city),
+   FOREIGN KEY(Id_area_code) REFERENCES Area_code(Id_area_code)
+);
+
+CREATE TABLE Deposit(
+   Id_deposit INT,
+   deposit_amount DECIMAL(10,2) NOT NULL,
+   deposit_details VARCHAR(150),
+   Id_deposit_type INT NOT NULL,
+   PRIMARY KEY(Id_deposit),
+   FOREIGN KEY(Id_deposit_type) REFERENCES Deposit_type(Id_deposit_type)
+);
+
+CREATE TABLE Address(
+   Id_Address INT,
+   street_address VARCHAR(50) NOT NULL,
+   address_specifications VARCHAR(100),
+   Id_city INT NOT NULL,
+   PRIMARY KEY(Id_Address),
+   FOREIGN KEY(Id_city) REFERENCES City(Id_city)
+);
+
+CREATE TABLE Users(
+   Id_user INT,
+   email VARCHAR(80) NOT NULL,
+   username VARCHAR(50) NOT NULL,
+   password VARCHAR(257) NOT NULL,
+   first_name VARCHAR(50) NOT NULL,
+   last_name VARCHAR(50) NOT NULL,
+   date_of_birth DATE NOT NULL,
+   phone VARCHAR(13) NOT NULL,
+   company VARCHAR(50),
+   active BOOLEAN NOT NULL,
+   sexe CHAR(1),
+   Id_Address INT NOT NULL,
+   PRIMARY KEY(Id_user),
+   UNIQUE(email),
+   UNIQUE(username),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address)
+);
+
+CREATE TABLE Items(
+   Id_item INT,
+   name VARCHAR(50) NOT NULL,
+   entry_date DATETIME NOT NULL,
+   description TEXT NOT NULL,
+   price_per_day DECIMAL(10,2),
+   flag_destroyed BOOLEAN NOT NULL,
+   warranty DATE,
+   Id_sub_category INT NOT NULL,
+   PRIMARY KEY(Id_item),
+   FOREIGN KEY(Id_sub_category) REFERENCES Sub_category(Id_sub_category)
+);
+
+CREATE TABLE Repairman(
+   Id_repairman INT,
+   name VARCHAR(50) NOT NULL,
+   phone VARCHAR(15),
+   email VARCHAR(100),
+   Id_Address INT NOT NULL,
+   PRIMARY KEY(Id_repairman),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address)
+);
+
+CREATE TABLE Lease(
+   Id_lease INT,
+   start_date DATETIME NOT NULL,
+   end_date DATETIME,
+   total_cost DECIMAL(10,2),
+   reason_of_lease VARCHAR(100) NOT NULL,
+   date_approved DATETIME,
+   aproved BOOLEAN,
+   motive VARCHAR(300),
+   Id_user INT,
+   Id_Address INT NOT NULL,
+   Id_deposit INT,
+   Id_user_1 INT NOT NULL,
+   PRIMARY KEY(Id_lease),
+   FOREIGN KEY(Id_user) REFERENCES Users(Id_user),
+   FOREIGN KEY(Id_Address) REFERENCES Address(Id_Address),
+   FOREIGN KEY(Id_deposit) REFERENCES Deposit(Id_deposit),
+   FOREIGN KEY(Id_user_1) REFERENCES Users(Id_user)
+);
+
+CREATE TABLE Item_file_paths(
+   Id_item_file_paths INT,
+   image_file_path VARCHAR(2048),
+   manual_file_path VARCHAR(2048),
+   Id_item INT NOT NULL,
+   PRIMARY KEY(Id_item_file_paths),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item)
+);
+
+CREATE TABLE Maintenance(
+   Id_maintenance INT,
+   incident VARCHAR(300),
+   date_sent DATETIME,
+   flag_repaired DATETIME,
+   repair_cost DECIMAL(10,2),
+   broken_components VARCHAR(100),
+   Id_repairman INT NOT NULL,
+   Id_item INT NOT NULL,
+   PRIMARY KEY(Id_maintenance),
+   FOREIGN KEY(Id_repairman) REFERENCES Repairman(Id_repairman),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item)
+);
+
+CREATE TABLE Incident_file_paths(
+   Id_incident_file_paths INT,
+   image_file_path VARCHAR(2048),
+   Id_maintenance INT NOT NULL,
+   PRIMARY KEY(Id_incident_file_paths),
+   FOREIGN KEY(Id_maintenance) REFERENCES Maintenance(Id_maintenance)
+);
+
+CREATE TABLE Asso_17(
+   Id_item INT,
+   Id_licence INT,
+   PRIMARY KEY(Id_item, Id_licence),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item),
+   FOREIGN KEY(Id_licence) REFERENCES Licence(Id_licence)
+);
+
+CREATE TABLE user_permission(
+   Id_user INT,
+   Id_permission INT,
+   PRIMARY KEY(Id_user, Id_permission),
+   FOREIGN KEY(Id_user) REFERENCES Users(Id_user),
+   FOREIGN KEY(Id_permission) REFERENCES Permissions(Id_permission)
+);
+
+CREATE TABLE lease_items(
+   Id_item INT,
+   Id_lease INT,
+   date_de_retour_reele VARCHAR(50),
+   PRIMARY KEY(Id_item, Id_lease),
+   FOREIGN KEY(Id_item) REFERENCES Items(Id_item),
+   FOREIGN KEY(Id_lease) REFERENCES Lease(Id_lease)
+);
+
